@@ -57,13 +57,15 @@ public class ProductController {
             return ResponseEntity.noContent().build();
         }
 
-        @GetMapping("/search")
-        public ResponseEntity<List<Product>> search(
-                @RequestParam(required = false) String nome,
-                @RequestParam(required = false) String tipo,
-                @RequestParam(required = false) Double precoMin,
-                @RequestParam(required = false) Double precoMax) {
-            List<Product> products = productService.search(nome, tipo, precoMin, precoMax);
-            return ResponseEntity.ok(products);
+        @GetMapping("/filtros")
+        public ResponseEntity<List<Product>> findByFilters(
+                @RequestParam(required = false) String name,
+                @RequestParam(required = false) String description,
+                @RequestParam(required = false) Double minPrice,
+                @RequestParam(required = false) Double maxPrice,
+                @RequestParam(required = false) Long productTypeId
+                ){
+            List<Product> filters = productService.findByFilters(name, description, minPrice, maxPrice, productTypeId);
+            return ResponseEntity.ok(filters);
         }
 }
