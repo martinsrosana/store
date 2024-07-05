@@ -2,6 +2,7 @@ package com.rosana.store.service;
 
 import com.rosana.store.entity.Product;
 import com.rosana.store.repository.ProductRepository;
+import com.rosana.store.repository.ProductSpecifications;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -38,16 +39,9 @@ public class ProductService {
         productRepository.deleteById(id);
     }
 
-    public List<Product> search(String name, String type, Double priceMin, Double priceMax) {
-        if (name != null) {
-            return productRepository.findByName(name);
-        } else if (type != null) {
-            return productRepository.findByDescription(type);
-        } else if (priceMin != null && priceMax != null) {
-            return productRepository.findByPriceBetween(priceMin, priceMax);
-        } else {
-            return findAll();
-        }
+    public List<Product> findByFilters(String name, String description, Double minPrice, Double maxPrice, Long productTypeId) {
+        return productRepository.findAll(
+                ProductSpecifications.withFilters(name, description, minPrice, maxPrice, productTypeId));
     }
 }
 
