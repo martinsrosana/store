@@ -1,10 +1,14 @@
 package com.rosana.store.controller;
 
+import com.rosana.store.dto.ProductTypeRequestDTO;
+import com.rosana.store.dto.ProductTypeResponseDTO;
 import com.rosana.store.entity.ProductType;
 import com.rosana.store.service.ProductTypeService;
 import javax.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,34 +22,41 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/tipos")
-@Validated
+@Transactional
 public class ProductTypeController {
 
     @Autowired
     private ProductTypeService productTypeService;
 
     @PostMapping
-    public ResponseEntity<ProductType> create(@Valid @RequestBody ProductType productType) {
-        ProductType createdProductType = productTypeService.save(productType);
-        return ResponseEntity.ok(createdProductType);
+    public ResponseEntity<ProductTypeResponseDTO> create(@RequestBody ProductTypeRequestDTO productTypeRequestDTO) {
+        ProductTypeResponseDTO createdProductType = productTypeService.save(productTypeRequestDTO);
+        return ResponseEntity.status(HttpStatus.CREATED).body(createdProductType);
     }
 
     @GetMapping
-    public ResponseEntity<List<ProductType>> getAll() {
-        List<ProductType> tipos = productTypeService.findAll();
-        return ResponseEntity.ok(tipos);
+    public List<ProductTypeResponseDTO> getAll() {
+        return productTypeService.findAll();
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ProductType> getById(@PathVariable Long id) {
-        ProductType productType = productTypeService.findById(id);
-        return ResponseEntity.ok(productType);
+    public ResponseEntity<ProductTypeResponseDTO> getById(@PathVariable Long id) {
+        try{
+            ProductTypeResponseDTO productType = productTypeService.findById(id);
+            return ResponseEntity.ok(productType);
+        }catch (Exception e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ProductType> update(@PathVariable Long id, @Valid @RequestBody ProductType productType) {
-        ProductType updatedProductType = productTypeService.update(id, productType);
-        return ResponseEntity.ok(updatedProductType);
+    public ResponseEntity<ProductTypeResponseDTO> update(@PathVariable Long id, @RequestBody ProductTypeRequestDTO productTypeRequestDTO) {
+        try {
+            ProductTypeResponseDTO updatedProductType = productTypeService.update(id, productTypeRequestDTO);
+            return ResponseEntity.ok(updatedProductType);
+        }catch (RuntimeException e){
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @DeleteMapping("/{id}")

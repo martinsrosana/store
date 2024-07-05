@@ -1,12 +1,14 @@
 package com.rosana.store.controller;
 
-import com.rosana.store.entity.Product;
+import com.rosana.store.dto.ProductRequestDTO;
+import com.rosana.store.dto.ProductResponseDTO;
 import com.rosana.store.service.ProductService;
-
 import java.util.List;
 import javax.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,37 +20,43 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-
 @RestController
 @RequestMapping("/api/produtos")
-@Validated
+@Transactional
 public class ProductController {
 
         @Autowired
         private ProductService productService;
 
         @PostMapping
-        public ResponseEntity<Product> create(@Valid @RequestBody Product product) {
-            Product createdProduct = productService.save(product);
-            return ResponseEntity.ok(createdProduct);
+        public ResponseEntity<ProductResponseDTO> create(@Valid @RequestBody ProductRequestDTO productRequestDTO) {
+            ProductResponseDTO createdProduct = productService.save(productRequestDTO);
+            return ResponseEntity.status(HttpStatus.CREATED).body(createdProduct);
         }
 
         @GetMapping
-        public ResponseEntity<List<Product>> getAll() {
-            List<Product> products = productService.findAll();
-            return ResponseEntity.ok(products);
+        public List<ProductResponseDTO> getAll() {
+            return productService.findAll();
         }
 
         @GetMapping("/{id}")
-        public ResponseEntity<Product> getById(@PathVariable Long id) {
-            Product product = productService.findById(id);
-            return ResponseEntity.ok(product);
+        public ResponseEntity<ProductResponseDTO> getById(@PathVariable Long id) {
+            try{
+                ProductResponseDTO product = productService.findById(id);
+                return ResponseEntity.ok(product);
+            } catch (Exception e) {
+                return ResponseEntity.notFound().build();
+            }
         }
 
         @PutMapping("/{id}")
-        public ResponseEntity<Product> update(@PathVariable Long id, @Valid @RequestBody Product product) {
-            Product updatedProduct = productService.update(id, product);
-            return ResponseEntity.ok(updatedProduct);
+        public ResponseEntity<ProductResponseDTO> update(@PathVariable Long id, @Valid @RequestBody ProductRequestDTO productRequestDTO) {
+            try{
+                ProductResponseDTO updatedProduct = productService.update(id, productRequestDTO);
+                return ResponseEntity.ok(updatedProduct);
+            } catch ( Exception e) {
+                return ResponseEntity.notFound().build();
+            }
         }
 
         @DeleteMapping("/{id}")
@@ -58,14 +66,19 @@ public class ProductController {
         }
 
         @GetMapping("/filtros")
-        public ResponseEntity<List<Product>> findByFilters(
+        public List<ProductResponseDTO> findByFilters(
                 @RequestParam(required = false) String name,
                 @RequestParam(required = false) String description,
                 @RequestParam(required = false) Double minPrice,
                 @RequestParam(required = false) Double maxPrice,
                 @RequestParam(required = false) Long productTypeId
                 ){
-            List<Product> filters = productService.findByFilters(name, description, minPrice, maxPrice, productTypeId);
-            return ResponseEntity.ok(filters);
+            return productService.findByFilters(
+                    name,
+                    description,
+                    minPrice,
+                    maxPrice,
+                    productTypeId
+            );
         }
 }

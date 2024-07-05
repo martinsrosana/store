@@ -22,7 +22,7 @@ public class Product {
     @Column (name = "price")
     private Double price;
 
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.MERGE) // ou CascadeType.ALL
     @JoinColumn(name = "product_type_id")
     private ProductType productType;
 
